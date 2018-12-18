@@ -11,10 +11,14 @@ class TestApplication : public Game {
     Pipeline* pipeline;
     Mesh* mesh;
 
+    TestApplication() : mesh(nullptr), pipeline(nullptr) {
+
+    }
+
     void init() override {
-        assets.load_fragment_shader("frag", "shaders/frag.spv");
-        assets.load_vertex_shader("vert", "shaders/vert.spv");
-        assets.load_mesh("wolf", "models/Wolf.obj");
+        assets.load_fragment_shader("frag", "../resources/shaders/frag.spv");
+        assets.load_vertex_shader("vert", "../resources/shaders/vert.spv");
+        assets.load_mesh("wolf", "../resources/models/Wolf.obj");
 
         std::vector<Shader*> shaders = {
                 assets.get_shader("frag"),

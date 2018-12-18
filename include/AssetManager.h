@@ -18,14 +18,18 @@
 #define _ASSET_MANAGER_H_
 
 #include "Common.h"
-#include "Shader.h"
 #include "Mesh.h"
+#include "PoolAllocator.h"
+#include "Shader.h"
 
 namespace daybreak {
 
     class AssetManager {
         NO_COPY(AssetManager)
     private:
+        PoolAllocator m_shader_pool;
+        PoolAllocator m_mesh_pool;
+
         std::map<std::string, Shader*> m_shaders;
         std::map<std::string, Mesh*> m_meshes;
     public:

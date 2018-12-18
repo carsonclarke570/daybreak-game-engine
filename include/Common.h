@@ -48,6 +48,9 @@
 #define HEIGHT 600
 #define TITLE "Daybreak - Vulkan Version"
 
+// Allocation config
+#define ALLOCATION_SIZE 10
+
 // Enums
 
 
@@ -57,8 +60,8 @@
 #define ASSERT(exp, msg) if(!(exp)) Log::fatal(msg);
 
 #define NO_COPY(class)                          \
-    class(const class&) = delete;               \
-    class& operator=(const class&) = delete;    \
+    (class)(const (class)&) = delete;               \
+    (class)& operator=(const (class)&) = delete;    \
 
 #ifdef API_LOG
 #define LOG(msg) Log::log(msg);

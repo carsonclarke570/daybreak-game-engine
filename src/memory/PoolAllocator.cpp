@@ -18,37 +18,50 @@
 
 namespace daybreak {
 
-    PoolAllocator::PoolAllocator(size_t total_size, size_t chunk_size) : Allocator(total_size) {
+    PoolAllocator::PoolAllocator(size_t total_size, size_t chunk_size) : m_chunk_size(chunk_size), m_size(total_size) {
         ASSERT((total_size % chunk_size == 0), "PoolAllocator - Total size must be a multiple of chunk size!");
-        this->m_chunk_size = chunk_size;
+        m_memory.push_back(malloc(total_size));
         this->reset();
     }
 
-    void* PoolAllocator::allocate(size_t size, uint8_t alignment) {
-        ASSERT((size == m_chunk_size), "PoolAllocator - Size of allocation must be equal to chunk size!");
-        ASSERT((!m_free_blocks.empty()), "PoolAllocator - Allocation pool empty!");
+    PoolAllocator::~PoolAllocator() {
+        for (void* ptr : m_memory) {
+            free(ptr);
+        }
+    }
 
-        void* data = m_free_blocks.back();
-        m_free_blocks.pop_back();
-        m_used += m_chunk_size;
+    void* PoolAllocator::allocate() {
+        if (m_free_chunks.empty()) {
+            resize();
+        }
 
+        void* data = m_free_chunks.back();
+        m_free_chunks.pop_back();
         return data;
     }
 
     void PoolAllocator::release(void *ptr) {
-        memset(ptr, 0, m_chunk_size);
-        m_free_blocks.push_back(ptr);
-        m_used -= m_chunk_size;
+        m_free_chunks.push_back(ptr);
     }
 
     void PoolAllocator::reset() {
-        memset(m_start, 0, m_size);
-        m_used = 0;
+        for (void* ptr : m_memory) {
+            const uint32_t n = sizeof(ptr) / m_chunk_size;
+            for (uint32_t i = 0; i < n; i++) {
+                m_free_chunks.push_back((uint8_t*)ptr + (i * m_chunk_size));
+            }
+        }
+    }
+
+    void PoolAllocator::resize() {
+        void* data = malloc(m_size);
 
         const uint32_t n = m_size / m_chunk_size;
         for (uint32_t i = 0; i < n; i++) {
-            void* address = (char*) m_start + (i * m_chunk_size);
-            m_free_blocks.push_back(address);
+            m_free_chunks.push_back((uint8_t*)data + (i * m_chunk_size));
         }
+
+        m_size = m_size * 2;
+        m_memory.push_back(data);
     }
 }

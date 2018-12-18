@@ -21,24 +21,31 @@
 
 namespace daybreak {
 
-    AssetManager::AssetManager() {
-        m_shaders = std::map<std::string, Shader*>();
-        m_meshes = std::map<std::string, Mesh*>();
+    AssetManager::AssetManager() :
+        m_shader_pool(PoolAllocator(ALLOCATION_SIZE * sizeof(Shader), sizeof(Shader))),
+        m_mesh_pool(PoolAllocator(ALLOCATION_SIZE * sizeof(Mesh), sizeof(Mesh))),
+        m_shaders(std::map<std::string, Shader*>()), m_meshes(std::map<std::string, Mesh*>()) {
     }
 
     Shader* AssetManager::load_fragment_shader(std::string name, std::string file) {
-        ASSERT((m_shaders[name] == nullptr), "Assets - Fragment Shader " + name + " already exists");
-        Shader* shader = new Shader(Util::read_file(file), VK_SHADER_STAGE_FRAGMENT_BIT);
+        ASSERT((m_shaders[name] == nullptr), "Assets - Fragment shader " + name + " already exists");
+
+        auto shader = (Shader*) m_shader_pool.allocate();
+        shader = new (shader) Shader(Util::read_file(file), VK_SHADER_STAGE_FRAGMENT_BIT);
         m_shaders[name] = shader;
-        LOG("Assets - Created new Fragment Shader " + name);
+
+        LOG("Assets - Created new fragment shader " + name);
         return shader;
     }
 
     Shader* AssetManager::load_vertex_shader(std::string name, std::string file) {
-        ASSERT((m_shaders[name] == nullptr), "Assets - Vertex Shader " + name + " already exists");
-        Shader* shader = new Shader(Util::read_file(file), VK_SHADER_STAGE_VERTEX_BIT);
+        ASSERT((m_shaders[name] == nullptr), "Assets - Vertex shader " + name + " already exists");
+
+        auto shader = (Shader*) m_shader_pool.allocate();
+        shader = new (shader) Shader(Util::read_file(file), VK_SHADER_STAGE_VERTEX_BIT);
         m_shaders[name] = shader;
-        LOG("Assets - Created new Fragment Shader " + name);
+
+        LOG("Assets - Created new vertex shader " + name);
         return shader;
     }
 
@@ -47,13 +54,14 @@ namespace daybreak {
     }
 
     void AssetManager::release_shader(std::string name) {
-        delete m_shaders[name];
+        m_shader_pool.release(m_shaders[name]);
         m_shaders[name] = nullptr;
         LOG("Assets - Released Shader " + name);
     }
 
     Mesh* AssetManager::load_mesh(std::string name, std::string file) {
         ASSERT((m_meshes[name] == nullptr), "Assets - Mesh " + name + " already exists");
+
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
@@ -111,8 +119,11 @@ namespace daybreak {
                 indices.push_back(unique_vertices[vertex]);
             }
         }
-        Mesh* mesh = new Mesh(vertices, indices);
+
+        auto mesh = (Mesh*) m_mesh_pool.allocate();
+        mesh = new (mesh) Mesh(vertices, indices);
         m_meshes[name] = mesh;
+
         LOG("Assets - Created new Mesh " + name);
         return mesh;
     }
@@ -122,25 +133,21 @@ namespace daybreak {
     }
 
     void AssetManager::release_mesh(std::string name) {
-        delete m_meshes[name];
+        m_mesh_pool.release(m_meshes[name]);
         m_meshes[name] = nullptr;
         LOG("Assets - Released Mesh " + name);
     }
 
     void AssetManager::release_all_shaders() {
-        for (auto const& s : m_shaders) {
-            delete s.second;
-            LOG("Assets - Released Shader " + s.first);
-        }
+        LOG("Assets - Released all shaders");
         m_shaders.clear();
+        m_shader_pool.reset();
     }
 
     void AssetManager::release_all_meshes() {
-        for (auto const& s : m_meshes) {
-            delete s.second;
-            LOG("Assets - Released Mesh " + s.first);
-        }
+        LOG("Assets - Released all meshes");
         m_meshes.clear();
+        m_mesh_pool.reset();
     }
 
     void AssetManager::release_all_assets() {

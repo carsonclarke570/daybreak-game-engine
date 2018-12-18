@@ -7,7 +7,7 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-add_executable(VulkanPlayground main.cpp include/Common.h include/VulkanAPI.h src/rendering/VulkanAPI.cpp src/rendering/Window.cpp include/Window.h src/rendering/RenderPass.cpp include/RenderPass.h src/util/Util.cpp include/Util.h src/rendering/Buffer.cpp include/Buffer.h src/rendering/Shader.cpp include/Shader.h src/util/Log.cpp include/Log.h src/memory/Allocator.cpp include/Allocator.h src/memory/PoolAllocator.cpp include/PoolAllocator.h src/core/Daybreak.cpp include/Daybreak.h include/Game.h src/rendering/DescriptorSet.cpp include/DescriptorSet.h include/Initializer.h src/rendering/Mesh.cpp include/Mesh.h src/rendering/UniformBuffer.cpp include/UniformBuffer.h src/rendering/Pipeline.cpp include/Pipeline.h src/rendering/Model.cpp include/Model.h src/asset/AssetManager.cpp include/AssetManager.h)
+add_executable(VulkanPlayground main.cpp include/Common.h include/VulkanAPI.h src/rendering/VulkanAPI.cpp src/rendering/Window.cpp include/Window.h src/rendering/RenderPass.cpp include/RenderPass.h src/util/Util.cpp include/Util.h src/rendering/Buffer.cpp include/Buffer.h src/rendering/Shader.cpp include/Shader.h src/util/Log.cpp include/Log.h src/memory/PoolAllocator.cpp include/PoolAllocator.h src/core/Daybreak.cpp include/Daybreak.h include/Game.h src/rendering/DescriptorSet.cpp include/DescriptorSet.h include/Initializer.h src/rendering/Mesh.cpp include/Mesh.h src/rendering/UniformBuffer.cpp include/UniformBuffer.h src/rendering/Pipeline.cpp include/Pipeline.h src/rendering/Model.cpp include/Model.h src/asset/AssetManager.cpp include/AssetManager.h)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
