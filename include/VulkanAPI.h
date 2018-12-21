@@ -98,6 +98,7 @@ namespace daybreak {
         static VkDevice device();
         static VkViewport viewport();
         static VkRect2D& scissor();
+        static VkDescriptorPool descriptor_pool();
     private:
         static bool is_device_suitable(VkPhysicalDevice device, VkSurfaceKHR surface);
         static QueueFamilyIndices find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface);

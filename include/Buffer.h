@@ -22,6 +22,7 @@
 namespace daybreak {
 
     class Buffer {
+        NO_COPY(Buffer)
     private:
         VkBuffer m_buffer;
         VkDeviceMemory m_memory;
@@ -29,10 +30,6 @@ namespace daybreak {
         VkBufferUsageFlagBits m_usage;
     public:
         Buffer(VkDeviceSize size, VkBufferUsageFlagBits usage);
-        Buffer(const Buffer& other);
-        Buffer(Buffer&& other) noexcept;
-        Buffer& operator=(const Buffer& other);
-        Buffer& operator=(Buffer&& other) noexcept;
         ~Buffer();
 
         inline void load(const void* data) { load(data, m_size); }

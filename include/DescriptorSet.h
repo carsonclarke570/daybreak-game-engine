@@ -18,15 +18,24 @@
 #define _DESCRIPTOR_SET_H_
 
 #include "Common.h"
+#include "VulkanAPI.h"
+#include "Pipeline.h"
 
 namespace daybreak {
 
     class DescriptorSet {
+        NO_COPY(DescriptorSet)
     private:
+        const Pipeline& m_pipeline;
         VkDescriptorSet m_set;
-        VkPipeline m_pipeline;
+        std::unordered_map<std::string, Buffer*> m_buffers;
     public:
-        DescriptorSet(VkPipeline pipelin);
+        DescriptorSet(const Pipeline& m_pipeline);
+        ~DescriptorSet();
+
+        bool set_value(const std::string name, const void* data, size_t size);
+
+        inline VkDescriptorSet set() { return m_set; }
     };
 }
 

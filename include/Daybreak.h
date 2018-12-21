@@ -20,6 +20,7 @@
 #include "Game.h"
 #include "VulkanAPI.h"
 #include "Window.h"
+#include "Timer.h"
 
 namespace daybreak {
 

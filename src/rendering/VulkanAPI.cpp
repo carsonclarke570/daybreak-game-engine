@@ -520,6 +520,7 @@ namespace daybreak {
             vkDestroyFramebuffer(API::device(), framebuffer, nullptr);
         }
         m_garbage_framebuffers.clear();
+
         for (const GarbageImage &image : m_garbage_images) {
             vkDestroyImage(API::device(), image.image, nullptr);
             vkFreeMemory(API::device(), image.memory, nullptr);
@@ -694,6 +695,10 @@ namespace daybreak {
 
     VkRect2D& API::scissor() {
         return m_scissor;
+    }
+
+    VkDescriptorPool API::descriptor_pool() {
+        return m_descriptor_pool;
     }
 
     bool API::check_device_extension_support(VkPhysicalDevice device) {

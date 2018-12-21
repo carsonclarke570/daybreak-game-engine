@@ -27,9 +27,36 @@ namespace daybreak {
         m_game->init();
         LOG("Daybreak - Initialized game")
 
+        Timer timer;
+
+        double_t lag = 0.0f;
+        double_t start_time = timer.elapsed_milliseconds();
+#ifdef FPS_DEBUG
+        double_t tick = 0.0f;
+        uint32_t frames = 0;
+#endif
+
         while (!quit()) {
+            double_t delta = timer.elapsed_milliseconds() - start_time;
+            start_time = timer.elapsed_milliseconds();
+            lag += delta;
+#ifdef FPS_DEBUG
+            tick += delta;
+#endif
             Window::poll_events();
-            m_game->update();
+
+            while (lag >= TIME_STEP) {
+#ifdef FPS_DEBUG
+                if (tick >= 1000.0f) {
+                    LOG("Frames Per Second: " + std::to_string(frames));
+                    tick -= 1000.0f;
+                    frames = 0;
+                }
+                frames++;
+#endif
+                m_game->update(TIME_STEP);
+                lag -= TIME_STEP;
+            }
             m_game->render();
         }
         m_game->end();

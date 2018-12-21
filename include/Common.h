@@ -39,9 +39,14 @@
 #include "Log.h"
 #include "Util.h"
 
+// Game loop config
+#define FPS_CAP 200
+#define TIME_STEP 1000.0f / FPS_CAP
+
 // Debug config
 #define API_DEBUG
 #define API_LOG
+#define FPS_DEBUG
 
 // Window init config
 #define WIDTH 800
@@ -60,13 +65,17 @@
 #define ASSERT(exp, msg) if(!(exp)) Log::fatal(msg);
 
 #define NO_COPY(class)                          \
-    (class)(const (class)&) = delete;               \
-    (class)& operator=(const (class)&) = delete;    \
+    class(const class&) = delete;               \
+    class& operator=(const class&) = delete;    \
 
 #ifdef API_LOG
 #define LOG(msg) Log::log(msg);
 #define WARN(msg) Log::warn(msg);
 #define FATAL(msg) Log::fatal(msg);
+#else
+#define LOG(msg) 0;
+#define WARN(msg) 0;
+#define FATAL(msg) 0;
 #endif
 
 #endif

@@ -17,8 +17,27 @@
 #include "../../include/Pipeline.h"
 
 namespace daybreak {
-    Pipeline::Pipeline(std::vector<Shader*>& shaders) {
-        VkPipelineShaderStageCreateInfo shader_stages[4] {};
+    Pipeline::Pipeline(std::vector<Shader*>& shaders, std::vector<Binding>& bindings) : m_bindings(bindings) {
+        std::vector<VkDescriptorSetLayoutBinding> uniform_bindings;
+        for (Binding binding : bindings) {
+            VkDescriptorSetLayoutBinding uniform_binding = {};
+            uniform_binding.binding = binding.binding;
+            uniform_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            uniform_binding.descriptorCount = 1;
+            uniform_binding.stageFlags = binding.stage;
+            uniform_bindings.push_back(uniform_binding);
+        }
+
+        VkDescriptorSetLayoutCreateInfo layout_info = {};
+        layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layout_info.bindingCount = uniform_bindings.size();
+        layout_info.pBindings = uniform_bindings.data();
+
+        if (vkCreateDescriptorSetLayout(API::device(), &layout_info, nullptr, &m_desc_layout) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create descriptor set layout!");
+        }
+
+        VkPipelineShaderStageCreateInfo shader_stages[4]{};
         for (uint8_t i = 0; i < shaders.size(); i++) {
             VkPipelineShaderStageCreateInfo stage = {};
             stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -70,7 +89,9 @@ namespace daybreak {
         multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
         VkPipelineColorBlendAttachmentState blending_attachment = {};
-        blending_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blending_attachment.colorWriteMask =
+                VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT;
         blending_attachment.blendEnable = VK_FALSE;
 
         VkPipelineColorBlendStateCreateInfo color_blending = {};
@@ -86,7 +107,8 @@ namespace daybreak {
 
         VkPipelineLayoutCreateInfo pipeline_layout_info = {};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_info.setLayoutCount = 0;
+        pipeline_layout_info.setLayoutCount = 1;
+        pipeline_layout_info.pSetLayouts = &m_desc_layout;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         if (vkCreatePipelineLayout(API::device(), &pipeline_layout_info, nullptr, &m_layout) != VK_SUCCESS) {
@@ -103,28 +125,30 @@ namespace daybreak {
         dynamic_create.pDynamicStates = states;
         dynamic_create.dynamicStateCount = COUNT_OF(states);
 
-        VkGraphicsPipelineCreateInfo pipelineInfo = {};
-        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = shaders.size();
-        pipelineInfo.pStages = shader_stages;
-        pipelineInfo.pVertexInputState = &vertex_input_info;
-        pipelineInfo.pInputAssemblyState = &input_assembly;
-        pipelineInfo.pViewportState = &viewport_state;
-        pipelineInfo.pRasterizationState = &rasterizer;
-        pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pColorBlendState = &color_blending;
-        pipelineInfo.pDynamicState = &dynamic_create;
-        pipelineInfo.layout = m_layout;
-        pipelineInfo.renderPass = RenderPass::geometry_pass();
-        pipelineInfo.subpass = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+        VkGraphicsPipelineCreateInfo pipeline_info = {};
+        pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipeline_info.stageCount = shaders.size();
+        pipeline_info.pStages = shader_stages;
+        pipeline_info.pVertexInputState = &vertex_input_info;
+        pipeline_info.pInputAssemblyState = &input_assembly;
+        pipeline_info.pViewportState = &viewport_state;
+        pipeline_info.pRasterizationState = &rasterizer;
+        pipeline_info.pMultisampleState = &multisampling;
+        pipeline_info.pColorBlendState = &color_blending;
+        pipeline_info.pDynamicState = &dynamic_create;
+        pipeline_info.layout = m_layout;
+        pipeline_info.renderPass = RenderPass::geometry_pass();
+        pipeline_info.subpass = 0;
+        pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(API::device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS) {
+        if (vkCreateGraphicsPipelines(API::device(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &m_pipeline) !=
+            VK_SUCCESS) {
             throw std::runtime_error("failed to create graphics pipeline!");
         }
     }
 
     Pipeline::~Pipeline() {
+        vkDestroyDescriptorSetLayout(API::device(), m_desc_layout, nullptr);
         vkDestroyPipeline(API::device(), m_pipeline, nullptr);
         vkDestroyPipelineLayout(API::device(), m_layout, nullptr);
     }

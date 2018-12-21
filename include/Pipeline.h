@@ -24,17 +24,29 @@
 
 namespace daybreak {
 
+    struct Binding {
+        std::string name;
+        uint32_t size, binding;
+        VkShaderStageFlagBits stage;
+    };
+
     class Pipeline {
         NO_COPY(Pipeline)
     private:
         VkPipeline m_pipeline;
         VkPipelineLayout m_layout;
+        VkDescriptorSetLayout m_desc_layout;
+        std::vector<Binding> m_bindings;
     public:
-        Pipeline(std::vector<Shader*>& shaders);
+        Pipeline(std::vector<Shader*>& shaders, std::vector<Binding>& bindings);
         ~Pipeline();
 
         inline VkPipeline pipeline() const { return m_pipeline; }
         inline VkPipelineLayout layout() const { return m_layout; }
+
+        inline VkDescriptorSetLayout desc_set_layout() const { return m_desc_layout; }
+
+        inline std::vector<Binding> bindings() const { return m_bindings; }
     };
 }
 

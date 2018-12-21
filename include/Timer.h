@@ -14,22 +14,26 @@
  *  limitations under the License.
 **/
 
-#ifndef _GAME_H_
-#define _GAME_H_
+#ifndef _TIMER_H_
+#define _TIMER_H_
 
 #include "Common.h"
 
 namespace daybreak {
 
-    class Game {
+    class Timer {
+    private:
+        std::chrono::time_point<std::chrono::high_resolution_clock> m_clock;
     public:
-        virtual void init() = 0;
-        virtual void update(double_t delta) = 0;
-        virtual void render() = 0;
-        virtual void end() = 0;
-        virtual bool quit() = 0;
-    };
+        Timer();
 
+        void reset();
+
+        float_t elapsed_seconds();
+        double_t elapsed_milliseconds();
+        double_t elapsed_microseconds();
+        double_t elapsed_nanoseconds();
+    };
 }
 
 #endif
