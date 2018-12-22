@@ -1,8 +1,7 @@
 #include "include/Game.h"
 #include "include/Daybreak.h"
-#include "include/Pipeline.h"
+#include "include/Scene.h"
 #include "include/AssetManager.h"
-#include "include/DescriptorSet.h"
 #include "include/Timer.h"
 
 using namespace daybreak;
@@ -10,10 +9,8 @@ using namespace daybreak;
 class TestApplication : public Game {
 public:
     AssetManager assets;
-    Timer timer;
 
-    Pipeline* pipeline;
-    DescriptorSet* descriptor_set;
+    Scene* m_test_scene;
 
     Mesh* mesh;
 
@@ -25,7 +22,7 @@ public:
         glm::mat4 proj;
     };
 
-    TestApplication() : mesh(nullptr), pipeline(nullptr), descriptor_set(nullptr) {
+    TestApplication() : mesh(nullptr), m_test_scene(nullptr) {
         elapsed = 0;
     }
 
@@ -43,8 +40,7 @@ public:
                 {"transform", sizeof(UBO), 0, VK_SHADER_STAGE_VERTEX_BIT}
         };
 
-        pipeline = new Pipeline(shaders, bindings);
-        descriptor_set = new DescriptorSet(*pipeline);
+        m_test_scene = new Scene(shaders, bindings);
 
 //        std::vector<Vertex> vertices = {
 //                {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -58,8 +54,7 @@ public:
 //        };
 //
 //        mesh = new Mesh(vertices, indices);
-        mesh = assets.get_mesh("wolf");
-        timer.reset();
+        m_test_scene->add_mesh(assets.get_mesh("wolf"));
     }
 
     void update(double_t delta) override {
@@ -73,30 +68,12 @@ public:
                                     10.0f);
         ubo.proj[1][1] *= -1;
 
-        descriptor_set->set_value("transform", &ubo, sizeof(ubo));
+        m_test_scene->update(delta);
+        m_test_scene->update_uniform("transform", &ubo, sizeof(ubo));
     }
 
     void render() override {
-        VkCommandBuffer cmd = API::begin_render_command_buffer();
-        API::begin_present_pass();
-
-        // Bind current pipeline && description set
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline());
-        VkDescriptorSet set = descriptor_set->set();
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->layout(), 0, 1, &set, 0, nullptr);
-
-        { // Resize viewport and scissor
-            VkViewport viewport = API::viewport();
-            VkRect2D scissor = API::scissor();
-            vkCmdSetScissor(cmd, 0, 1, &scissor);
-            vkCmdSetViewport(cmd, 0, 1, &viewport);
-        }
-
-        // Render mesh
-        mesh->render(cmd);
-
-        API::end_present_pass();
-        API::end_render_command_buffer();
+        m_test_scene->render();
     }
 
     void end() override {
