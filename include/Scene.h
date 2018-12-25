@@ -17,10 +17,9 @@
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
-#include "Pipeline.h"
 #include "DescriptorSet.h"
-
-#include "Mesh.h"
+#include "Manager.h"
+#include "Pipeline.h"
 
 namespace daybreak {
 
@@ -28,8 +27,7 @@ namespace daybreak {
     private:
         Pipeline m_pipeline;
         DescriptorSet m_set;
-
-        std::vector<Mesh*> m_meshes;
+        Manager m_manager;
     public:
         Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings);
         ~Scene();
@@ -41,7 +39,35 @@ namespace daybreak {
             return m_set.set_value(name, data, size);
         }
 
-        void add_mesh(Mesh* mesh);
+        template<class T>
+        inline bool create_store() {
+            return m_manager.create_store<T>();
+        }
+
+        inline void add_system(std::shared_ptr<System>& system) {
+            m_manager.add_system(system);
+        }
+
+        inline Entity create_entity() {
+            return m_manager.create_entity();
+        }
+
+        template<class T>
+        inline void add_component(const Entity entity, T&& component) {
+            m_manager.add_component(entity, component);
+        }
+
+        inline size_t register_entity(const Entity entity) {
+            return m_manager.register_entity(entity);
+        }
+
+        inline size_t unregister_entity(const Entity entity) {
+            return m_manager.unregister_entity(entity);
+        }
+
+        inline Manager& get_manager() {
+            return m_manager;
+        }
     };
 }
 

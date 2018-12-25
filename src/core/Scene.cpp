@@ -20,7 +20,6 @@ namespace daybreak {
 
     Scene::Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings) : m_pipeline(shaders, bindings),
                                                                                 m_set(m_pipeline) {
-
     }
 
     Scene::~Scene() {
@@ -28,7 +27,7 @@ namespace daybreak {
     }
 
     void Scene::update(double_t delta) {
-
+        m_manager.update(delta);
     }
 
     void Scene::render() {
@@ -49,10 +48,8 @@ namespace daybreak {
             vkCmdSetViewport(cmd, 0, 1, &viewport);
         }
 
-        // Render mesh
-        for (Mesh* mesh : m_meshes) {
-            mesh->render(cmd);
-        }
+        // Call all systems that have render functions
+        m_manager.render(cmd);
 
         API::end_present_pass();
         API::end_render_command_buffer();
