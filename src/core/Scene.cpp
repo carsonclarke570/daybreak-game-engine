@@ -27,7 +27,7 @@ namespace daybreak {
     }
 
     void Scene::update(double_t delta) {
-        m_manager.update(delta);
+
     }
 
     void Scene::render() {
@@ -48,14 +48,7 @@ namespace daybreak {
             vkCmdSetViewport(cmd, 0, 1, &viewport);
         }
 
-        // Call all systems that have render functions
-        m_manager.render(cmd);
-
         API::end_present_pass();
         API::end_render_command_buffer();
-    }
-
-    void Scene::add_mesh(daybreak::Mesh* mesh) {
-        m_meshes.push_back(mesh);
     }
 }

@@ -3,42 +3,11 @@
 #include "include/Scene.h"
 #include "include/AssetManager.h"
 #include "include/Timer.h"
-#include "include/Manager.h"
 
 using namespace daybreak;
 
-struct MeshComponent : public Component {
-    static const ComponentType m_type;
-
-    Mesh* m_mesh;
-
-    explicit MeshComponent(Mesh* mesh) : m_mesh(mesh) {
-    }
-};
-
-class RenderSystem : public System {
-public:
-    explicit RenderSystem(Manager& manager) : System(manager) {
-        ComponentTypeSet components;
-        components.insert(MeshComponent::m_type);
-        set_components(std::move(components));
-    }
-
-    void update(double_t delta, Entity entity) override {
-        //MeshComponent& mesh = m_manager.get_store<MeshComponent>().get(entity);
-    }
-
-    void render(VkCommandBuffer cmd, Entity entity) override {
-        //MeshComponent& mesh = m_manager.get_store<MeshComponent>().get(entity);
-        //mesh.m_mesh->render(cmd);
-    }
-};
-
-const ComponentType MeshComponent::m_type = 1;
-
 class TestApplication : public Game {
 public:
-    Manager manager;
     AssetManager assets;
 
     Scene* m_test_scene;
@@ -72,18 +41,6 @@ public:
         };
 
         m_test_scene = new Scene(shaders, bindings);
-
-        // Create component stores
-        m_test_scene->create_store<MeshComponent>();
-
-        // Add systems
-        std::shared_ptr<System> sys(new RenderSystem(m_test_scene->get_manager()));
-        m_test_scene->add_system(sys);
-
-        // Create entities
-        Entity dog = m_test_scene->create_entity();
-        m_test_scene->add_component(dog, MeshComponent(assets.get_mesh("wolf")));
-        m_test_scene->register_entity(dog);
     }
 
     void update(double_t delta) override {

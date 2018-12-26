@@ -18,7 +18,6 @@
 #define _VULKAN_API_H
 
 #include "Common.h"
-#include "Initializer.h"
 #include "Window.h"
 
 #ifdef API_DEBUG
