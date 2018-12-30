@@ -14,34 +14,36 @@
  *  limitations under the License.
 **/
 
-#ifndef _SCENE_H_
-#define _SCENE_H_
+#ifndef _GAME_OBJECT_H_
+#define _GAME_OBJECT_H_
 
-#include "GameObject.h"
+#include "Common.h"
 #include "DescriptorSet.h"
-#include "Pipeline.h"
+#include "GameComponent.h"
 
 namespace daybreak {
 
-    class Scene {
+    class GameObject {
+        NO_COPY(GameObject)
     private:
-        Pipeline m_pipeline;
-        DescriptorSet m_set;
-        GameObject* m_root;
+        std::vector<GameComponent*> m_components;
+        std::vector<GameObject*> m_children;
+
+        void render_all(VkCommandBuffer cmd);
+        void update_all(double_t delta);
     public:
-        Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings);
-        ~Scene();
+        GameObject() = default;
+        ~GameObject();
 
+        void render(VkCommandBuffer cmd);
         void update(double_t delta);
-        void render();
 
-        inline void add_object(GameObject* object) { m_root->add_child(object); }
+        void add_child(GameObject* child);
+        void add_component(GameComponent* component);
 
-        inline bool update_uniform(std::string name, const void* data, size_t size) {
-            return m_set.set_value(name, data, size);
-        }
+        inline std::vector<GameComponent*> get_components() { return m_components; }
 
-        inline DescriptorSet& get_set() { return m_set; }
+        inline std::vector<GameObject*> get_children() { return m_children; }
     };
 }
 

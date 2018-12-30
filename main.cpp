@@ -3,6 +3,7 @@
 #include "include/Scene.h"
 #include "include/AssetManager.h"
 #include "include/Timer.h"
+#include "include/MeshComponent.h"
 
 using namespace daybreak;
 
@@ -14,8 +15,6 @@ public:
 
     Mesh* mesh;
 
-    double_t elapsed;
-
     struct UBO {
         glm::mat4 model;
         glm::mat4 view;
@@ -23,10 +22,11 @@ public:
     };
 
     TestApplication() : mesh(nullptr), m_test_scene(nullptr) {
-        elapsed = 0;
     }
 
     void init() override {
+
+        // Load Assets
         assets.load_fragment_shader("frag", "../resources/shaders/frag.spv");
         assets.load_vertex_shader("vert", "../resources/shaders/vert.spv");
         assets.load_mesh("wolf", "../resources/models/Wolf.obj");
@@ -41,21 +41,25 @@ public:
         };
 
         m_test_scene = new Scene(shaders, bindings);
+
+        auto* wolf = new GameObject();
+        wolf->add_component(new MeshComponent(assets.get_mesh("wolf")));
+
+        m_test_scene->add_object(wolf);
     }
 
     void update(double_t delta) override {
-        elapsed += delta;
 
         UBO ubo = {};
-        ubo.model = glm::rotate(glm::mat4(1.0f), (float) (elapsed / 1000.0f) * glm::radians(90.0f),
+        ubo.model = glm::rotate(glm::mat4(1.0f), (float) (delta / 1000.0f) * glm::radians(90.0f),
                                 glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), API::viewport().width / API::viewport().height, 0.1f,
                                     10.0f);
         ubo.proj[1][1] *= -1;
 
+        m_test_scene->update_uniform("transform", &ubo, sizeof(UBO));
         m_test_scene->update(delta);
-        m_test_scene->update_uniform("transform", &ubo, sizeof(ubo));
     }
 
     void render() override {

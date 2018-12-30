@@ -18,16 +18,18 @@
 
 namespace daybreak {
 
-    Scene::Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings) : m_pipeline(shaders, bindings),
-                                                                                m_set(m_pipeline) {
+    Scene::Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings)
+            : m_pipeline(shaders, bindings),
+              m_set(m_pipeline) {
+        m_root = new GameObject();
     }
 
     Scene::~Scene() {
-        // DO NOT DELETE MESHES, THAT'S IS THE ASSET MANAGERS JOB
+        delete m_root;
     }
 
     void Scene::update(double_t delta) {
-
+        m_root->update(delta);
     }
 
     void Scene::render() {
@@ -47,6 +49,8 @@ namespace daybreak {
             vkCmdSetScissor(cmd, 0, 1, &scissor);
             vkCmdSetViewport(cmd, 0, 1, &viewport);
         }
+
+        m_root->render(cmd);
 
         API::end_present_pass();
         API::end_render_command_buffer();

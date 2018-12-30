@@ -31,6 +31,7 @@ namespace daybreak {
 
         double_t lag = 0.0f;
         double_t start_time = timer.elapsed_milliseconds();
+        uint64_t n = 0;
 #ifdef FPS_DEBUG
         double_t tick = 0.0f;
         uint32_t frames = 0;
@@ -54,7 +55,8 @@ namespace daybreak {
                 }
                 frames++;
 #endif
-                m_game->update(TIME_STEP);
+                n++;
+                m_game->update(n * TIME_STEP);
                 lag -= TIME_STEP;
             }
             m_game->render();
