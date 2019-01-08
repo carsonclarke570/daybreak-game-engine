@@ -106,9 +106,9 @@ namespace daybreak {
 
                 if (!attrib.normals.empty()) {
                     vertex.normal = {
-                            attrib.normals[3 * index.vertex_index + 0],
-                            attrib.normals[3 * index.vertex_index + 1],
-                            attrib.normals[3 * index.vertex_index + 2]
+                            attrib.normals[3 * index.normal_index + 0],
+                            attrib.normals[3 * index.normal_index + 1],
+                            attrib.normals[3 * index.normal_index + 2]
                     };
                 }
 

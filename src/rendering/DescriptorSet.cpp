@@ -18,9 +18,9 @@
 
 namespace daybreak {
 
-    DescriptorSet::DescriptorSet(const Pipeline& pipeline) : m_set(0), m_pipeline(pipeline) {
-        if (!API::find_desc_set(pipeline.pipeline(), m_set)) {
-            VkDescriptorSetLayout layouts[] = {pipeline.desc_set_layout()};
+    DescriptorSet::DescriptorSet(const Pipeline* pipeline) : m_set(0), m_pipeline(pipeline) {
+        if (!API::find_desc_set(pipeline->pipeline(), m_set)) {
+            VkDescriptorSetLayout layouts[] = {pipeline->desc_set_layout()};
             VkDescriptorSetAllocateInfo alloc_info = {};
             alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             alloc_info.descriptorPool = API::descriptor_pool();
@@ -32,7 +32,7 @@ namespace daybreak {
             }
         }
 
-        for (Binding& binding : pipeline.bindings()) {
+        for (Binding& binding : pipeline->bindings()) {
             auto buffer = new Buffer(binding.size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
             VkDescriptorBufferInfo buffer_info = {buffer->getBuffer(), 0, binding.size};
             m_buffers[binding.name] = buffer;
@@ -54,10 +54,14 @@ namespace daybreak {
         for (auto& entry : m_buffers) {
             delete entry.second;
         }
-        API::destroy_desc_set(m_pipeline.pipeline(), m_set);
+        API::destroy_desc_set(m_pipeline->pipeline(), m_set);
     }
 
-    bool DescriptorSet::set_value(const std::string name, const void* data, size_t size) {
+    void DescriptorSet::bind(VkCommandBuffer cmd) const {
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->layout(), 0, 1, &m_set, 0, nullptr);
+    }
+
+    bool DescriptorSet::set_value(const std::string& name, const void* data, size_t size) {
         if (m_buffers[name]) {
             m_buffers[name]->load(data, size);
             return true;

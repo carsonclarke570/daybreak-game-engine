@@ -21,6 +21,8 @@
 #include <GLFW/glfw3.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
 #include <shaderc/shaderc.h>
 
@@ -40,11 +42,11 @@
 #include "Util.h"
 
 // Game loop config
-#define FPS_CAP 200
+#define FPS_CAP 60
 #define TIME_STEP 1000.0f / FPS_CAP
 
 // Debug config
-#define API_DEBUG
+//#define API_DEBUG
 #define API_LOG
 #define FPS_DEBUG
 
@@ -62,7 +64,7 @@
 // Macros
 #define COUNT_OF(a) (sizeof(a)/sizeof(*(a)))
 
-#define ASSERT(exp, msg) if(!(exp)) Log::fatal(msg);
+#define ASSERT(exp, msg) if(exp) {} else { Log::fatal(msg); }
 
 #define NO_COPY(class)                          \
     class(const class&) = delete;               \

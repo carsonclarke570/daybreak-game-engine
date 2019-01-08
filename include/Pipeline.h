@@ -41,6 +41,8 @@ namespace daybreak {
         Pipeline(std::vector<Shader*>& shaders, std::vector<Binding>& bindings);
         ~Pipeline();
 
+        void bind(VkCommandBuffer cmd) const;
+
         inline VkPipeline pipeline() const { return m_pipeline; }
         inline VkPipelineLayout layout() const { return m_layout; }
 

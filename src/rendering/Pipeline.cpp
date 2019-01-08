@@ -19,7 +19,7 @@
 namespace daybreak {
     Pipeline::Pipeline(std::vector<Shader*>& shaders, std::vector<Binding>& bindings) : m_bindings(bindings) {
         std::vector<VkDescriptorSetLayoutBinding> uniform_bindings;
-        for (Binding binding : bindings) {
+        for (Binding& binding : bindings) {
             VkDescriptorSetLayoutBinding uniform_binding = {};
             uniform_binding.binding = binding.binding;
             uniform_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -148,8 +148,13 @@ namespace daybreak {
     }
 
     Pipeline::~Pipeline() {
+        std::cout << "Sleep";
         vkDestroyDescriptorSetLayout(API::device(), m_desc_layout, nullptr);
         vkDestroyPipeline(API::device(), m_pipeline, nullptr);
         vkDestroyPipelineLayout(API::device(), m_layout, nullptr);
+    }
+
+    void Pipeline::bind(VkCommandBuffer cmd) const {
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
     }
 }

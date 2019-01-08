@@ -18,30 +18,25 @@
 #define _SCENE_H_
 
 #include "GameObject.h"
-#include "DescriptorSet.h"
-#include "Pipeline.h"
+#include "Renderer.h"
 
 namespace daybreak {
 
     class Scene {
     private:
-        Pipeline m_pipeline;
-        DescriptorSet m_set;
+        Renderer* m_renderer;
         GameObject* m_root;
+
+        glm::mat4 view;
+        glm::mat4 proj;
     public:
-        Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings);
+        explicit Scene(Renderer* renderer);
         ~Scene();
 
         void update(double_t delta);
         void render();
 
         inline void add_object(GameObject* object) { m_root->add_child(object); }
-
-        inline bool update_uniform(std::string name, const void* data, size_t size) {
-            return m_set.set_value(name, data, size);
-        }
-
-        inline DescriptorSet& get_set() { return m_set; }
     };
 }
 

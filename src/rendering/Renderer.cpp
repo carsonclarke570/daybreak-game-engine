@@ -14,30 +14,26 @@
  *  limitations under the License.
 **/
 
-#ifndef _DESCRIPTOR_SET_H_
-#define _DESCRIPTOR_SET_H_
-
-#include "Common.h"
-#include "VulkanAPI.h"
-#include "Pipeline.h"
+#include "../../include/Renderer.h"
 
 namespace daybreak {
 
-    class DescriptorSet {
-        NO_COPY(DescriptorSet)
-    private:
-        const Pipeline* m_pipeline;
-        VkDescriptorSet m_set;
-        std::unordered_map<std::string, Buffer*> m_buffers;
-    public:
-        DescriptorSet(const Pipeline* m_pipeline);
-        ~DescriptorSet();
+    Renderer::Renderer(const Pipeline* pipeline, DescriptorSet* set) :
+            m_pipeline(pipeline),
+            m_set(set) {
+    }
 
-        void bind(VkCommandBuffer cmd) const;
-        bool set_value(const std::string& name, const void* data, size_t size);
+    Renderer::~Renderer() {
+        delete m_set;
+        delete m_pipeline;
+    }
 
-        inline VkDescriptorSet set() { return m_set; }
-    };
+    void Renderer::bind(VkCommandBuffer cmd) {
+        m_pipeline->bind(cmd);
+        m_set->bind(cmd);
+    }
+
+    void Renderer::update_uniform(const std::string& name, const void* data, size_t size) {
+        m_set->set_value(name, data, size);
+    }
 }
-
-#endif

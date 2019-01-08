@@ -18,14 +18,14 @@
 
 namespace daybreak {
 
-    Scene::Scene(std::vector<Shader*> shaders, std::vector<Binding> bindings)
-            : m_pipeline(shaders, bindings),
-              m_set(m_pipeline) {
-        m_root = new GameObject();
+    Scene::Scene(Renderer* renderer) :
+            m_renderer(renderer),
+            m_root(new GameObject()) {
     }
 
     Scene::~Scene() {
         delete m_root;
+        delete m_renderer;
     }
 
     void Scene::update(double_t delta) {
@@ -36,11 +36,15 @@ namespace daybreak {
         VkCommandBuffer cmd = API::begin_render_command_buffer();
         API::begin_present_pass();
 
-        // Bind current pipeline & descriptor set
+        m_renderer->bind(cmd);
+
+        // Set viewport
         {
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.pipeline());
-            VkDescriptorSet set = m_set.set();
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), 0, 1, &set, 0, nullptr);
+            VPMat viewproj = {};
+            viewproj.view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -4.0f));
+            viewproj.proj = glm::perspective(glm::radians(45.0f), API::viewport().width / API::viewport().height, 0.1f,
+                                             10.0f);
+            m_renderer->update_uniform("vp_mat", &viewproj, sizeof(VPMat));
         }
 
         { // Resize viewport and scissor
@@ -50,7 +54,7 @@ namespace daybreak {
             vkCmdSetViewport(cmd, 0, 1, &viewport);
         }
 
-        m_root->render(cmd);
+        m_root->render(m_renderer, cmd);
 
         API::end_present_pass();
         API::end_render_command_buffer();

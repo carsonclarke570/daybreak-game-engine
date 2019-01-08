@@ -3,25 +3,17 @@
 #include "include/Scene.h"
 #include "include/AssetManager.h"
 #include "include/Timer.h"
-#include "include/MeshComponent.h"
+#include "include/UniformBufferObject.h"
 
 using namespace daybreak;
 
 class TestApplication : public Game {
 public:
     AssetManager assets;
-
     Scene* m_test_scene;
+    GameObject* wolf;
 
-    Mesh* mesh;
-
-    struct UBO {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 proj;
-    };
-
-    TestApplication() : mesh(nullptr), m_test_scene(nullptr) {
+    TestApplication() : wolf(nullptr), m_test_scene(nullptr) {
     }
 
     void init() override {
@@ -29,7 +21,7 @@ public:
         // Load Assets
         assets.load_fragment_shader("frag", "../resources/shaders/frag.spv");
         assets.load_vertex_shader("vert", "../resources/shaders/vert.spv");
-        assets.load_mesh("wolf", "../resources/models/Wolf.obj");
+        assets.load_mesh("wolf", "../resources/models/cube.obj");
 
         std::vector<Shader*> shaders = {
                 assets.get_shader("frag"),
@@ -37,28 +29,26 @@ public:
         };
 
         std::vector<Binding> bindings = {
-                {"transform", sizeof(UBO), 0, VK_SHADER_STAGE_VERTEX_BIT}
+                {"m_mat",  sizeof(MMat),  0, VK_SHADER_STAGE_VERTEX_BIT},
+                {"vp_mat", sizeof(VPMat), 1, VK_SHADER_STAGE_VERTEX_BIT}
         };
 
-        m_test_scene = new Scene(shaders, bindings);
+        auto pipeline = new Pipeline(shaders, bindings);
+        auto set = new DescriptorSet(pipeline);
+        auto renderer = new Renderer(pipeline, set);
 
-        auto* wolf = new GameObject();
-        wolf->add_component(new MeshComponent(assets.get_mesh("wolf")));
+        m_test_scene = new Scene(renderer);
+
+        wolf = new GameObject(assets.get_mesh("wolf"));
+        auto test = new GameObject();
 
         m_test_scene->add_object(wolf);
+        m_test_scene->add_object(test);
     }
 
     void update(double_t delta) override {
-
-        UBO ubo = {};
-        ubo.model = glm::rotate(glm::mat4(1.0f), (float) (delta / 1000.0f) * glm::radians(90.0f),
-                                glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), API::viewport().width / API::viewport().height, 0.1f,
-                                    10.0f);
-        ubo.proj[1][1] *= -1;
-
-        m_test_scene->update_uniform("transform", &ubo, sizeof(UBO));
+        glm::vec3 up = {0.0f, 1.0f, 0.0f};
+        wolf->set_rotation((float_t) glm::radians(delta / 10.0f), up);
         m_test_scene->update(delta);
     }
 
@@ -75,7 +65,11 @@ public:
     }
 };
 
+#include <Windows.h>
+
 int main() {
+    //Sleep(30000);
+
     TestApplication app;
     Daybreak::load(&app);
 

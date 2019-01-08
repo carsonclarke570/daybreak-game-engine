@@ -20,6 +20,9 @@
 #include "Common.h"
 #include "DescriptorSet.h"
 #include "GameComponent.h"
+#include "Renderer.h"
+#include "Transform.h"
+#include "UniformBufferObject.h"
 
 namespace daybreak {
 
@@ -29,21 +32,39 @@ namespace daybreak {
         std::vector<GameComponent*> m_components;
         std::vector<GameObject*> m_children;
 
-        void render_all(VkCommandBuffer cmd);
+        void render_all(Renderer* renderer, VkCommandBuffer cmd);
         void update_all(double_t delta);
+    protected:
+        GameObject* m_parent;
+        Mesh* m_mesh;
+        Transform m_world_transform;
+        Transform m_transform;
     public:
-        GameObject() = default;
+        explicit GameObject(Mesh* mesh = nullptr);
         ~GameObject();
 
-        void render(VkCommandBuffer cmd);
+        void render(Renderer* renderer, VkCommandBuffer cmd);
         void update(double_t delta);
 
         void add_child(GameObject* child);
         void add_component(GameComponent* component);
 
-        inline std::vector<GameComponent*> get_components() { return m_components; }
+        inline void translate(glm::vec3& translate) { m_transform.translate(translate); }
 
+        inline void scale(glm::vec3& scale) { m_transform.scale(scale); }
+
+        inline void rotate(float_t angle, glm::vec3& axis) { m_transform.rotate(angle, axis); }
+
+        inline void set_position(glm::vec3& position) { m_transform.set_position(position); }
+
+        inline void set_scale(glm::vec3& scale) { m_transform.set_scale(scale); }
+
+        inline void set_rotation(float_t angle, glm::vec3& axis) { m_transform.set_rotation(axis, angle); }
+
+        inline std::vector<GameComponent*> get_components() { return m_components; }
         inline std::vector<GameObject*> get_children() { return m_children; }
+
+        inline Mesh* get_mesh() const { return m_mesh; }
     };
 }
 

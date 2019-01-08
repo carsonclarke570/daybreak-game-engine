@@ -18,6 +18,7 @@
 #define _GAME_COMPONENT_H_
 
 #include "Common.h"
+#include "Renderer.h"
 
 namespace daybreak {
 
@@ -27,7 +28,7 @@ namespace daybreak {
         GameComponent() = default;
         virtual ~GameComponent() = default;
 
-        virtual void render(VkCommandBuffer cmd) = 0;
+        virtual void render(Renderer* renderer, VkCommandBuffer cmd) = 0;
         virtual void update(double_t delta) = 0;
     };
 }

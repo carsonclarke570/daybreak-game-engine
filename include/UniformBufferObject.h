@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Carson Clarke-Magrab
+ * Copyright 2019 Carson Clarke-Magrab
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,20 +14,21 @@
  *  limitations under the License.
 **/
 
-#include "../../include/MeshComponent.h"
+#ifndef _UNIFORM_BUFFER_OBJECT_H_
+#define _UNIFORM_BUFFER_OBJECT_H_
+
+#include "Common.h"
 
 namespace daybreak {
 
-    MeshComponent::MeshComponent(Mesh* mesh)
-            : GameComponent(),
-              m_mesh(mesh) {
-    }
+    struct MMat {
+        glm::mat4 model;
+    };
 
-    void MeshComponent::render(VkCommandBuffer cmd) {
-        m_mesh->render(cmd);
-    }
-
-    void MeshComponent::update(double_t delta) {
-
-    }
+    struct VPMat {
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
 }
+
+#endif

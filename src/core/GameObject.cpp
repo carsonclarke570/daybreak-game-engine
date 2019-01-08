@@ -18,6 +18,15 @@
 
 namespace daybreak {
 
+    GameObject::GameObject(Mesh* mesh) :
+            m_components(std::vector<GameComponent*>()),
+            m_children(std::vector<GameObject*>()) {
+        m_mesh = mesh;
+        m_parent = nullptr;
+        m_transform = Transform();
+        m_world_transform = Transform();
+    }
+
     GameObject::~GameObject() {
         for (GameComponent* component : m_components) {
             delete component;
@@ -28,9 +37,9 @@ namespace daybreak {
         }
     }
 
-    void GameObject::render_all(VkCommandBuffer cmd) {
+    void GameObject::render_all(Renderer* renderer, VkCommandBuffer cmd) {
         for (GameComponent* component : m_components) {
-            component->render(cmd);
+            component->render(renderer, cmd);
         }
     }
 
@@ -40,14 +49,26 @@ namespace daybreak {
         }
     }
 
-    void GameObject::render(VkCommandBuffer cmd) {
-        render_all(cmd);
+    void GameObject::render(Renderer* renderer, VkCommandBuffer cmd) {
+        if (m_mesh) {
+            MMat ubo = {};
+            ubo.model = m_transform.get_transform();
+            renderer->update_uniform("m_mat", &ubo, sizeof(MMat));
+            m_mesh->render(cmd);
+        }
+
+        render_all(renderer, cmd);
         for (GameObject* object : m_children) {
-            object->render(cmd);
+            object->render(renderer, cmd);
         }
     }
 
     void GameObject::update(double_t delta) {
+        if (m_parent)
+            m_world_transform.set_transform(m_parent->m_world_transform.get_transform() * m_transform.get_transform());
+        else
+            m_world_transform.set_transform(m_transform.get_transform());
+
         update_all(delta);
         for (GameObject* object : m_children) {
             object->update(delta);
@@ -56,6 +77,7 @@ namespace daybreak {
 
     void GameObject::add_child(GameObject* child) {
         m_children.push_back(child);
+        child->m_parent = this;
     }
 
     void GameObject::add_component(GameComponent* component) {

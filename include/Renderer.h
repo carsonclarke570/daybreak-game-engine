@@ -14,22 +14,25 @@
  *  limitations under the License.
 **/
 
-#ifndef _MESH_COMPONENT_H_
-#define _MESH_COMPONENT_H_
+#ifndef _RENDERER_H_
+#define _RENDERER_H_
 
-#include "GameComponent.h"
-#include "Mesh.h"
+#include "Pipeline.h"
+#include "DescriptorSet.h"
 
 namespace daybreak {
 
-    class MeshComponent : public GameComponent {
+    class Renderer {
+        NO_COPY(Renderer)
     private:
-        Mesh* m_mesh;
+        const Pipeline* m_pipeline;
+        DescriptorSet* m_set;
     public:
-        explicit MeshComponent(Mesh* mesh);
+        Renderer(const Pipeline* pipeline, DescriptorSet* set);
+        ~Renderer();
 
-        void render(VkCommandBuffer cmd) override;
-        void update(double_t delta) override;
+        void bind(VkCommandBuffer cmd);
+        void update_uniform(const std::string& name, const void* data, size_t size);
     };
 }
 
